@@ -10,13 +10,13 @@ SYSTEM_MODE(MANUAL);
 #include "Adafruit_Sensor.h"
 
 // macros for accelerometer thresholds
-#define TILT_RIGHT_MAX -4500
-#define TILT_LEFT_MIN 4500
-#define TILT_BRAKE_MAX -4000
+#define TILT_RIGHT_MIN 6000
+#define TILT_LEFT_MAX -6000
+#define TILT_BRAKE_MIN 7000
 #define LEVEL_X_MIN -1000
 #define LEVEL_X_MAX 1000
-#define LEVEL_Y_MIN -1000
-#define LEVEL_Y_MAX 1000
+#define LEVEL_Y_MIN 900
+#define LEVEL_Y_MAX 1600
 // macros for softpot thresholds
 #define SOFTPOT_MIDDLE 2800
 #define SOFTPOT_NOT_PRESSED 10
@@ -33,11 +33,11 @@ int fsrCounter = 0;
 int softpotCounter = 0;
 
 // First FSR (force sensitive resistor) is connected to analog A0
-int fsrAnalogPin0 = A0; 
+int fsrAnalogPin0 = A3; 
 // the analog reading from the first FSR resistor divider
 int fsrReading0; 
 // Second FSR (force sensitive resistor) is connected to analog A1
-int fsrAnalogPin1 = A1; 
+int fsrAnalogPin1 = A2; 
 // the analog reading from the second FSR resistor divider
 int fsrReading1;      
 // softpot connected to analog A4
@@ -79,7 +79,7 @@ void loop() {
   }
   
   // FSR section
-  /*fsrReading0 = analogRead(fsrAnalogPin0);
+  fsrReading0 = analogRead(fsrAnalogPin0);
   fsrReading1 = analogRead(fsrAnalogPin1);
   // left sensor pressed, right sensor free, turn left
   if (fsrReading0 < FSR_PRESS && fsrReading1 > FSR_STATIONARY) {
@@ -93,18 +93,18 @@ void loop() {
      fsrCounter=1; 
     }
   } else if (fsrReading1 < FSR_PRESS && fsrReading0 < FSR_PRESS) { // both sensors pressed, brake
-    Serial.println(6);
+    //Serial.println(6);
   } else if (fsrReading1 > FSR_STATIONARY && fsrReading0 > FSR_STATIONARY) { // both sensors free, reset counters
     if (fsrCounter==1) {
       fsrCounter = 0;
     }
-  }*/
+  }
 
   // Accelerometer Section
   lis.read();      // get X Y and Z data at once
   
   // accelerometer tilting right - move player right
-  if (lis.y <= TILT_RIGHT_MAX) {
+  if (lis.x >= TILT_RIGHT_MIN) {
     // ensures that you must go level again before it accepts more right input
     if (rightAccelCounter==0) { 
        Serial.println(2);
@@ -112,7 +112,7 @@ void loop() {
     }
   }
   // accelerometer tilting left - move player left
-  else if (lis.y >= TILT_LEFT_MIN) {
+  else if (lis.x <= TILT_LEFT_MAX) {
     // ensures that you must go level again before it accepts more left input
     if (leftAccelCounter==0) { 
       Serial.println(1);
@@ -133,7 +133,7 @@ void loop() {
     }
   } 
   // accelerometer tilting down towards user - brake (continuous)
-  else if (lis.x <= TILT_BRAKE_MAX) { 
+  else if (lis.y >= TILT_BRAKE_MIN) { 
     if (brakeAccelCounter==0){
       Serial.println(3);
       brakeAccelCounter = 1;
